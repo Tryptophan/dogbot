@@ -1,28 +1,30 @@
+import RPi.GPIO as GPIO
+import time
 import motors
-import switch
 import ultrasound
 import sound
 
-bool freeMode = false
+GPIO.setmode(GPIO.BCM)
 
 # Main loop for polling dogbot sensors
-while (True):
+##motors.reset()
+GPIO.setup(21, GPIO.IN)
+print (GPIO.input(21))
 
-    # Checks to see if the button to toggle freeMode is on
-    if (switch.GPIO.input() == 1):
-        freeMode = !freeMode
-    
-    # Runs dogbot based on freeMode setting
-    if (freeMode):
-        if (ultrasound.object()):
-            motors.backup(2)
-            motors.turnRight(1)
+while(True):
+    # Checks to see if switch to toggle freemode is on
+    freeMode = (GPIO.input(21) == 1)
+    while(freeMode):
+        if(ultrasound.getDistance() < 80.0):
+            motors.backup(.5)
+            motors.turnRight(.364)
         else:
-            motors.forward(2)
-    else:
-        if (ultrasound.object()):
-            motors.turnLeft(3)
-            sound.bark()
-        
+            motors.forward(.5)
+        freeMode = (GPIO.input(21) == 1)
+    if(ultrasound.getDistance() < 20.0):
+        motors.turnLeft(.7234)
+        sound.bark()
+
 motors.GPIO.cleanup()
+ultrasound.GPIO.cleanup()
 exit()
